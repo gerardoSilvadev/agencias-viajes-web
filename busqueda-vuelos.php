@@ -1,30 +1,24 @@
 <?php
-// Módulo de búsqueda de vuelos
+session_start();
 
-function buscarVuelos($origen, $destino, $fecha) {
-    // Validar que los campos no estén vacíos
-    if (empty($origen) || empty($destino) || empty($fecha)) {
-        return [
-            "error" => true,
-            "mensaje" => "Por favor completa todos los campos"
-        ];
-    }
+// Validación y sanitización de entradas
+$origen  = trim(strip_tags($_POST['origen'] ?? ''));
+$destino = trim(strip_tags($_POST['destino'] ?? ''));
+$fecha   = $_POST['fechaSalida'] ?? '';
+$pasajeros = filter_input(INPUT_POST, 'pasajeros', FILTER_VALIDATE_INT);
 
-    // Mostrar en log del servidor (equivalente al console.log)
-    error_log("Buscando vuelos de " . $origen . " a " . $destino);
-
-    return [
-        "error" => false,
-        "mensaje" => "Buscando vuelos de $origen a $destino en fecha $fecha"
-    ];
+// Validar formato de fecha
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $fecha)) {
+    header('Location: index.php?error=fecha_invalida');
+    exit;
 }
 
-// Ejemplo de uso
-$resultado = buscarVuelos("Santiago", "Buenos Aires", "2025-06-15");
+// Guardar búsqueda en sesión (solo datos primitivos)
+$_SESSION['busqueda_vuelo'] = [
+    'origen'    => $origen,
+    'destino'   => $destino,
+    'fecha'     => $fecha,
+    'pasajeros' => $pasajeros,
+];
 
-if ($resultado["error"]) {
-    echo $resultado["mensaje"];
-} else {
-    echo $resultado["mensaje"];
-}
-?>
+header('Location: resultados_vuelos.php');
